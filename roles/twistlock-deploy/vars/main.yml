@@ -1,2 +1,18 @@
 ---
 # vars file for twistlock-deploy
+openshift_clusters:
+  ocp_cluster1:
+    api_endpoint: https://api.quasysdev.quasys.com.tr:6443
+    sa_token: "{{ lookup('ansible.builtin.env', 'OCP_SA') }}"
+  ocp_cluster2:
+    api_endpoint: https://api.quasysdev.quasys.com.tr:6443
+    sa_token: "{{ lookup('ansible.builtin.env', 'OCP_SA') }}"
+twistlock:
+  username: "{{ lookup('ansible.builtin.env', 'TWISTLOCK_USERNAME') }}"
+  password: "{{ lookup('ansible.builtin.env', 'TWISTLOCK_PASSWORD') }}"
+twistlock_console: "ec2-34-203-144-89.compute-1.amazonaws.com:8083" #sabit
+twistlock_defender: "ec2-34-203-144-89.compute-1.amazonaws.com:8084" #sabit
+apiversion: "v1" #sabit
+namespace: "test-qua-twistlock"  # sabit
+defender_version: "32"  # Define your defender version
+repo: jfrog.xyz/defender
