@@ -1,0 +1,9 @@
+---
+    - name: Debug survey variable
+      ansible.builtin.debug:
+        var: openshift_clusters[item]
+      loop: "{{ survey_clusters }}"
+
+    - name: Block for twistlock install
+      include_tasks: twistlock-task.yml
+      loop: "{{ survey_clusters }}"
