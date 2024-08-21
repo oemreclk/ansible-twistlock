@@ -1,10 +1,7 @@
 ---
 - name: Set facts for each oc_server
   set_fact:
-#        current_oc_server: "{{ item }}"
     cluster_name: "{{ openshift_clusters[item].api_endpoint.split('.')[1] }}"
-#      with_items: "{{ oc_servers }}"
-#      register: server_facts
 
 - name: Defenders - Deploy - DaemonSet - Get Defender yaml
   uri:
@@ -22,7 +19,6 @@
             "collectPodLabels": true,
             "memoryLimit": 2000,
             "cpuLimit": 1500,
-            #"image": "{{ repo }}:{{ defender_version }}",
             "selinux": true
             }
     user: "{{ twistlock.username }}"
@@ -38,6 +34,41 @@
   retries: 1
   delay: 10
   delegate_to: localhost
+  when: repo is not defined
+
+- name: Defenders - Deploy - DaemonSet - Get Defender yaml
+  uri:
+    url: https://{{ twistlock_console }}/api/{{ apiversion }}/defenders/daemonset.yaml
+    method: POST
+    body: {
+            "consoleAddr": "{{ twistlock_defender }}",
+            "cluster": "{{ cluster_name }}",
+            "namespace": "{{ namespace }}",
+            "orchestration": "openshift",
+            "containerRuntime": "crio",
+            "privileged": false,
+            "serviceaccounts": true,
+            "istio": false,
+            "collectPodLabels": true,
+            "memoryLimit": 2000,
+            "cpuLimit": 1500,
+            "image": "{{ repo }}:{{ defender_version }}",
+            "selinux": true
+            }
+    user: "{{ twistlock.username }}"
+    password: "{{ twistlock.password }}"
+    dest: defender-ds.yaml
+    mode: 0755
+    force_basic_auth: yes
+    validate_certs: no
+    body_format: json
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 1
+  delay: 10
+  delegate_to: localhost
+  when: repo is defined
 
 - name: Install Defender daemonset YAML
   redhat.openshift.k8s:
