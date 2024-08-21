@@ -45,10 +45,10 @@ Example Playbook
 
 
 
-- name: Install/Update Twistlock Defender Job Template
-  hosts: localhost
-  roles:
-    - twistlock-deploy
+    - name: Install/Update Twistlock Defender Job Template
+      hosts: localhost
+      roles:
+        - twistlock-deploy
 
 License
 -------
