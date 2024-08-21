@@ -1,0 +1,5 @@
+---
+- name: Install/Update Twistlock Defender Job Template
+  hosts: localhost
+  roles:
+    - twistlock-deploy
