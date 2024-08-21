@@ -50,7 +50,7 @@ vars/main.yml
     apiversion: "v1" #Apiversion
     namespace: "test-qua-twistlock"  #Namespace for the deployment.
     defender_version: "32"  #Defender version.
-    repo: jfrog.xyz/defender #Repo for defender image. 
+    repo: jfrog.xyz/defender #If not defined it uses paloalto container registry. If defined, pull required image from private container registry.
 
 Dependencies
 ------------
