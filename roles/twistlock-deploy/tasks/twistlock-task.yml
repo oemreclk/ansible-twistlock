@@ -87,9 +87,13 @@
   set_fact:
     filtered_documents: "{{ yaml_documents | selectattr('kind', 'in', ['DaemonSet', 'Service', 'Secret']) | list }}"
 
-- name: Write the filtered DaemonSet documents to a new YAML file
+- name: Convert filtered documents to YAML with separators
+  set_fact:
+    filtered_yaml: "{{ filtered_documents | map('to_nice_yaml') | join('---\n') }}"
+
+- name: Write the filtered documents to a new YAML file
   copy:
-    content: "{{ filtered_documents | to_nice_yaml }}"
+    content: "---\n{{ filtered_yaml }}"
     dest: filtered_twistlock.yml
 
 - name: Debug Yaml Before parsing
