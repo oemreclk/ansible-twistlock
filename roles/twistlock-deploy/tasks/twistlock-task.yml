@@ -1,6 +1,6 @@
 ---
 - name: Set facts for each oc_server
-  set_fact:
+  ansible.builtin.set_fact:
     cluster_name: "{{ openshift_clusters[item].api_endpoint.split('.')[1] }}"
 
 - name: Defenders - Deploy - DaemonSet - Get Defender yaml
@@ -75,31 +75,31 @@
     cmd: cat defender-ds.yaml
 
 - name: Read the original YAML file
-  slurp:
+  ansible.builtin.slurp:
     src: defender-ds.yaml
   register: original_yaml
 
 - name: Split the YAML content into documents
-  set_fact:
+  ansible.builtin.set_fact:
     yaml_documents: "{{ original_yaml.content | b64decode | from_yaml_all }}"
 
-- name: Filter only DaemonSet documents
+- name: Filter DaemonSet, Service and Secret documents
   set_fact:
-    daemonset_documents: "{{ yaml_documents | selectattr('kind', 'equalto', 'DaemonSet') | list }}"
+    filtered_documents: "{{ yaml_documents | selectattr('kind', 'in', ['DaemonSet', 'Service', 'Secret']) | list }}"
 
 - name: Write the filtered DaemonSet documents to a new YAML file
   copy:
-    content: "{{ daemonset_documents | to_nice_yaml }}"
-    dest: filtered_daemonset.yml
+    content: "{{ filtered_documents | to_nice_yaml }}"
+    dest: filtered_twistlock.yml
 
 - name: Debug Yaml Before parsing
   ansible.builtin.command:
-    cmd: cat filtered_daemonset.yml
+    cmd: cat filtered_twistlock.yml
 
 - name: Install Defender daemonset YAML
   redhat.openshift.k8s:
     state: present
-    src: filtered_daemonset.yml
+    src: filtered_twistlock.yml
     api_key: "{{ openshift_clusters[item].sa_token }}"
     host: "{{ openshift_clusters[item].api_endpoint }}"
     validate_certs: false
