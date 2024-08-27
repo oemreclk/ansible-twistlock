@@ -23,7 +23,7 @@
             }
     user: "{{ twistlock.username }}"
     password: "{{ twistlock.password }}"
-    dest: defender-ds.yaml
+    dest: /tmp/defender-ds.yaml
     mode: 0755
     force_basic_auth: yes
     validate_certs: no
@@ -57,7 +57,7 @@
             }
     user: "{{ twistlock.username }}"
     password: "{{ twistlock.password }}"
-    dest: defender-ds.yaml
+    dest: /tmp/defender-ds.yaml
     mode: 0755
     force_basic_auth: yes
     validate_certs: no
@@ -70,13 +70,13 @@
   delegate_to: localhost
   when: repo is defined
 
-- name: Debug Yaml Before parsing
-  ansible.builtin.command:
-    cmd: cat defender-ds.yaml
+#- name: Debug Yaml Before parsing
+#  ansible.builtin.command:
+#    cmd: cat /tmp/defender-ds.yaml
 
 - name: Read the original YAML file
   ansible.builtin.slurp:
-    src: defender-ds.yaml
+    src: /tmp/defender-ds.yaml
   register: original_yaml
 
 - name: Split the YAML content into documents
@@ -94,16 +94,16 @@
 - name: Write the filtered documents to a new YAML file
   copy:
     content: "---\n{{ filtered_yaml }}"
-    dest: filtered_twistlock.yml
+    dest: /tmp/filtered_twistlock.yml
 
-- name: Debug Yaml Before parsing
-  ansible.builtin.command:
-    cmd: cat filtered_twistlock.yml
+#- name: Debug Yaml Before parsing
+#  ansible.builtin.command:
+#    cmd: cat /tmp/filtered_twistlock.yml
 
 - name: Install Defender daemonset YAML
   redhat.openshift.k8s:
     state: present
-    src: filtered_twistlock.yml
+    src: /tmp/filtered_twistlock.yml
     api_key: "{{ openshift_clusters[item].sa_token }}"
     host: "{{ openshift_clusters[item].api_endpoint }}"
     validate_certs: false
