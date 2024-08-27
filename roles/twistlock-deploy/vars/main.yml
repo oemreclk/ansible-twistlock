@@ -15,4 +15,4 @@ twistlock_defender: "ec2-34-203-144-89.compute-1.amazonaws.com:8084"
 apiversion: "v1" #sabit
 namespace: "twistlock"  
 defender_version: "32"  
-repo: jfrog.xyz/defender
+#repo: jfrog.xyz/defender
