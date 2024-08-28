@@ -1,6 +1,6 @@
 ---
 - name: Set facts for each oc_server
-  set_fact:
+  ansible.builtin.set_fact:
     cluster_name: "{{ openshift_clusters[item].api_endpoint.split('.')[1] }}"
 
 - name: Defenders - Deploy - DaemonSet - Get Defender yaml
@@ -23,7 +23,7 @@
             }
     user: "{{ twistlock.username }}"
     password: "{{ twistlock.password }}"
-    dest: defender-ds.yaml
+    dest: /tmp/defender-ds.yaml
     mode: 0755
     force_basic_auth: yes
     validate_certs: no
@@ -57,7 +57,7 @@
             }
     user: "{{ twistlock.username }}"
     password: "{{ twistlock.password }}"
-    dest: defender-ds.yaml
+    dest: /tmp/defender-ds.yaml
     mode: 0755
     force_basic_auth: yes
     validate_certs: no
@@ -70,10 +70,40 @@
   delegate_to: localhost
   when: repo is defined
 
+#- name: Debug Yaml Before parsing
+#  ansible.builtin.command:
+#    cmd: cat /tmp/defender-ds.yaml
+
+- name: Read the original YAML file
+  ansible.builtin.slurp:
+    src: /tmp/defender-ds.yaml
+  register: original_yaml
+
+- name: Split the YAML content into documents
+  ansible.builtin.set_fact:
+    yaml_documents: "{{ original_yaml.content | b64decode | from_yaml_all }}"
+
+- name: Filter DaemonSet, Service and Secret documents
+  set_fact:
+    filtered_documents: "{{ yaml_documents | selectattr('kind', 'in', ['DaemonSet', 'Service', 'Secret']) | list }}"
+
+- name: Convert filtered documents to YAML with separators
+  set_fact:
+    filtered_yaml: "{{ filtered_documents | map('to_nice_yaml') | join('---\n') }}"
+
+- name: Write the filtered documents to a new YAML file
+  copy:
+    content: "---\n{{ filtered_yaml }}"
+    dest: /tmp/filtered_twistlock.yml
+
+#- name: Debug Yaml Before parsing
+#  ansible.builtin.command:
+#    cmd: cat /tmp/filtered_twistlock.yml
+
 - name: Install Defender daemonset YAML
   redhat.openshift.k8s:
     state: present
-    src: defender-ds.yaml
+    src: /tmp/filtered_twistlock.yml
     api_key: "{{ openshift_clusters[item].sa_token }}"
     host: "{{ openshift_clusters[item].api_endpoint }}"
     validate_certs: false
